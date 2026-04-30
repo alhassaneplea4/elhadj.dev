@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:astronetgn.page.gd)",
+      "WebFetch(domain:www.astronetgn.page.gd)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp"
+    ]
+  }
+}
