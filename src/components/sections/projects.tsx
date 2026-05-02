@@ -2,8 +2,7 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight, Code2 } from "lucide-react";
-import type { MouseEvent } from "react";
-import { useRef } from "react";
+import { useRef, type MouseEvent } from "react";
 import { projects } from "@/lib/data";
 import { SectionHeader } from "@/components/ui/section-header";
 import { cn } from "@/lib/utils";
@@ -19,17 +18,17 @@ const GRADIENTS: Record<string, string> = {
 
 export function Projects() {
   return (
-    <section id="projects" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="projects" className="relative overflow-hidden py-24 sm:py-32">
       <div className="absolute inset-0 bg-grid opacity-20" aria-hidden />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Réalisations"
-          title="Mes Projets"
-          description="Une sélection de projets sur lesquels j'ai travaillé. Chacun est une nouvelle aventure."
+          title="Mes projets"
+          description="Une sélection de projets sur lesquels j'ai travaillé. Chacun répond à un besoin métier concret."
         />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project, i) => (
             <ProjectCard key={project.title} project={project} index={i} />
           ))}
@@ -39,13 +38,7 @@ export function Projects() {
   );
 }
 
-function ProjectCard({
-  project,
-  index,
-}: {
-  project: (typeof projects)[number];
-  index: number;
-}) {
+function ProjectCard({ project, index }: { project: (typeof projects)[number]; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -68,6 +61,7 @@ function ProjectCard({
   };
 
   const isExternal = project.link.startsWith("http");
+  const hasRealLink = project.link !== "#";
 
   return (
     <motion.div
@@ -85,33 +79,30 @@ function ProjectCard({
         href={project.link}
         target={isExternal ? "_blank" : undefined}
         rel={isExternal ? "noopener noreferrer" : undefined}
-        className="relative block glass rounded-3xl overflow-hidden hover:border-primary/40 transition-all h-full"
+        aria-disabled={!hasRealLink}
+        className="glass relative block h-full overflow-hidden rounded-3xl transition-all hover:border-primary/40"
       >
         <div className={cn("relative aspect-video overflow-hidden bg-gradient-to-br", GRADIENTS[project.image])}>
           <div className="absolute inset-0 bg-grid opacity-30" />
           <div className="absolute inset-0 flex items-center justify-center">
-            <Code2 size={64} className="text-white/40 group-hover:text-white/70 group-hover:scale-110 transition-all duration-500" />
+            <Code2 size={64} className="text-white/40 transition-all duration-500 group-hover:scale-110 group-hover:text-white/70" />
           </div>
           {project.featured && (
-            <span className="absolute top-3 left-3 rounded-full bg-white/20 backdrop-blur px-3 py-1 text-xs font-medium text-white border border-white/30">
-              ⭐ Featured
+            <span className="absolute left-3 top-3 rounded-full border border-white/30 bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+              Projet phare
             </span>
           )}
-          <div className="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white opacity-0 group-hover:opacity-100 group-hover:rotate-0 -rotate-45 transition-all">
-            <ArrowUpRight size={18} />
-          </div>
+          {hasRealLink && (
+            <div className="absolute right-3 top-3 flex h-9 w-9 -rotate-45 items-center justify-center rounded-full bg-white/20 text-white opacity-0 backdrop-blur transition-all group-hover:rotate-0 group-hover:opacity-100">
+              <ArrowUpRight size={18} />
+            </div>
+          )}
         </div>
 
         <div className="p-6">
-          <div className="text-xs font-medium uppercase tracking-wider text-primary mb-2">
-            {project.category}
-          </div>
-          <h3 className="font-display text-xl font-bold mb-2 group-hover:text-primary transition-colors">
-            {project.title}
-          </h3>
-          <p className="text-sm text-muted leading-relaxed mb-4 line-clamp-3">
-            {project.description}
-          </p>
+          <div className="mb-2 text-xs font-medium uppercase tracking-wider text-primary">{project.category}</div>
+          <h3 className="mb-2 font-display text-xl font-bold transition-colors group-hover:text-primary">{project.title}</h3>
+          <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-muted">{project.description}</p>
           <div className="flex flex-wrap gap-1.5">
             {project.tags.map((tag) => (
               <span key={tag} className="rounded-full bg-surface-2/60 px-2.5 py-1 text-xs font-medium text-muted">

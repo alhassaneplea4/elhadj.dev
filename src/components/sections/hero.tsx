@@ -1,84 +1,112 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown, Download, Mail, MapPin, Sparkles } from "lucide-react";
-import { personal, stats } from "@/lib/data";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { personal } from "@/lib/data";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Typewriter } from "@/components/ui/typewriter";
-import { AnimatedCounter } from "@/components/ui/animated-counter";
+
+const roles = [
+  "Développeur Web & Mobile",
+  "Designer UI/UX",
+  "Compétences Dev Full-Stack",
+];
+
+const heroSlides = [
+  { src: "/hero-slides/slide-1.jpg", alt: "Aperçu du premier projet" },
+  { src: "/hero-slides/slide-2.jpg", alt: "Aperçu du deuxième projet" },
+  { src: "/hero-slides/slide-3.jpg", alt: "Aperçu du troisième projet" },
+];
+
+const availabilityColors = [
+  "text-success",
+  "text-primary",
+  "text-accent",
+  "text-primary-glow",
+  "text-blue-300",
+  "text-emerald-300",
+  "text-rose-300",
+  "text-yellow-200",
+  "text-purple-300",
+];
 
 export function Hero() {
+  const [availabilityColorIndex, setAvailabilityColorIndex] = useState(0);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setAvailabilityColorIndex((index) => (index + 1) % availabilityColors.length);
+    }, 2000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveSlideIndex((index) => (index + 1) % heroSlides.length);
+    }, 4000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
   return (
-    <section
-      id="hero"
-      className="relative min-h-screen flex items-center overflow-hidden pt-24 pb-12"
-    >
+    <section id="hero" className="relative flex min-h-screen items-center overflow-hidden pb-12 pt-24">
       <div className="absolute inset-0 bg-gradient-mesh" aria-hidden />
       <div className="absolute inset-0 bg-grid opacity-40" aria-hidden />
 
-      <div className="absolute -top-32 -left-32 h-[420px] w-[420px] rounded-full bg-primary/30 blur-3xl animate-blob" aria-hidden />
-      <div className="absolute top-1/3 -right-40 h-[480px] w-[480px] rounded-full bg-accent/25 blur-3xl animate-blob [animation-delay:-7s]" aria-hidden />
-      <div className="absolute bottom-0 left-1/3 h-[360px] w-[360px] rounded-full bg-primary-glow/25 blur-3xl animate-blob [animation-delay:-14s]" aria-hidden />
+      <div className="absolute -left-32 -top-32 h-[360px] w-[360px] rounded-full bg-primary/25 blur-3xl animate-blob sm:h-[420px] sm:w-[420px]" aria-hidden />
+      <div className="absolute -right-40 top-1/3 h-[380px] w-[380px] rounded-full bg-accent/20 blur-3xl animate-blob [animation-delay:-7s] sm:h-[480px] sm:w-[480px]" aria-hidden />
+      <div className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-primary-glow/20 blur-3xl animate-blob [animation-delay:-14s] sm:h-[360px] sm:w-[360px]" aria-hidden />
 
       <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-[1.3fr_1fr] gap-12 items-center">
+        <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
           <div className="order-2 lg:order-1">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-1.5 text-xs font-medium text-success mb-6"
-            >
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
-              </span>
-              Disponible pour de nouveaux projets
-            </motion.div>
+            {personal.available && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+                className="mb-6 inline-flex items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-1.5 text-xs font-medium text-success"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+                </span>
+                <span className={`${availabilityColors[availabilityColorIndex]} transition-colors duration-500`}>
+                  Disponible pour de nouveaux projets
+                </span>
+              </motion.div>
+            )}
 
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tighter leading-[0.95]"
+              className="font-display text-5xl font-bold leading-[0.95] tracking-tighter sm:text-6xl lg:text-7xl xl:text-8xl"
             >
               <span className="block text-foreground">Salut, je suis</span>
-              <span className="block mt-2 text-gradient animate-gradient">
-                {personal.firstName}
-              </span>
-              <span className="block text-foreground/90">{personal.lastName}</span>
+              <span className="mt-2 block text-gradient animate-gradient">{personal.firstName}</span>
             </motion.h1>
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              className="mt-6 text-xl sm:text-2xl text-muted font-medium h-8"
+              className="mt-6 min-h-8 text-xl font-medium text-muted sm:text-2xl"
             >
-              <span className="text-foreground/80">Je suis </span>
-              <Typewriter
-                words={[
-                  "Développeur Web",
-                  "Développeur Mobile",
-                  "Spécialiste Django",
-                  "Designer UI/UX",
-                  "Full-Stack Developer",
-                ]}
-                className="text-primary font-semibold"
-              />
+              <Typewriter words={roles} className="text-primary font-semibold" />
             </motion.div>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.7 }}
-              className="mt-6 max-w-2xl text-base sm:text-lg text-muted leading-relaxed"
+              className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
             >
               Passionné par la création d&apos;applications web modernes, performantes et accessibles.
-              Spécialisé en <span className="text-foreground font-medium">Django</span>,{" "}
-              <span className="text-foreground font-medium">PHP</span>,{" "}
-              <span className="text-foreground font-medium">JavaScript</span> et{" "}
-              <span className="text-foreground font-medium">Python</span>.
             </motion.p>
 
             <motion.div
@@ -92,7 +120,7 @@ export function Hero() {
               </span>
               <span className="text-border">•</span>
               <span className="inline-flex items-center gap-1.5">
-                <Sparkles size={14} className="text-accent" /> Open to remote
+                <Sparkles size={14} className="text-accent" /> Ouvert aux échanges
               </span>
             </motion.div>
 
@@ -112,61 +140,17 @@ export function Hero() {
                 <Mail size={18} /> Me contacter
               </MagneticButton>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 1.3 }}
-              className="mt-14 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl"
-            >
-              {stats.map((s) => (
-                <div
-                  key={s.label}
-                  className="glass rounded-2xl p-4 text-center hover:scale-105 hover:border-primary/40 transition-all"
-                >
-                  <div className="font-display text-3xl font-bold text-gradient">
-                    <AnimatedCounter value={s.value} />
-                    {s.suffix}
-                  </div>
-                  <div className="mt-1 text-xs text-muted">{s.label}</div>
-                </div>
-              ))}
-            </motion.div>
           </div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0, scale: 0.9, x: 30 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="order-1 lg:order-2 flex justify-center"
+            className="order-1 lg:order-2"
           >
-            <div className="relative">
-              <div className="absolute -inset-6 rounded-full bg-gradient-to-tr from-primary via-primary-glow to-accent blur-2xl opacity-50 animate-pulse-glow" aria-hidden />
-              <div className="absolute -inset-4 rounded-full bg-gradient-to-bl from-accent via-primary-glow to-primary opacity-30 animate-spin-slow" aria-hidden />
-
-              <motion.div
-                animate={{ y: [0, -12, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative h-72 w-72 sm:h-80 sm:w-80 lg:h-96 lg:w-96 rounded-full overflow-hidden ring-4 ring-primary/30 shadow-2xl"
-              >
-                <Avatar />
-              </motion.div>
-
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 pointer-events-none"
-              >
-                {[0, 72, 144, 216, 288].map((deg, i) => (
-                  <div
-                    key={deg}
-                    className="absolute top-1/2 left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2"
-                    style={{ transform: `translate(-50%,-50%) rotate(${deg}deg) translateY(-200px)` }}
-                  >
-                    <div className={`h-full w-full rounded-full ${i % 2 ? "bg-accent" : "bg-primary"} shadow-lg shadow-primary/50`} />
-                  </div>
-                ))}
-              </motion.div>
+            <div className="relative mx-auto w-full max-w-xl">
+              <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-tr from-primary via-primary-glow to-accent opacity-30 blur-2xl animate-pulse-glow" aria-hidden />
+              <HeroSlider activeSlideIndex={activeSlideIndex} setActiveSlideIndex={setActiveSlideIndex} />
             </div>
           </motion.div>
         </div>
@@ -176,9 +160,10 @@ export function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, y: [0, 8, 0] }}
           transition={{ delay: 1.6, y: { duration: 2, repeat: Infinity } }}
-          className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center gap-2 text-xs text-muted hover:text-primary transition-colors"
+          className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs text-muted transition-colors hover:text-primary md:flex"
+          aria-label="Aller à la section à propos"
         >
-          <span className="uppercase tracking-widest">Scroll</span>
+          {/* <span className="uppercase tracking-widest">Scroll</span> */}
           <ArrowDown size={16} />
         </motion.a>
       </div>
@@ -186,14 +171,50 @@ export function Hero() {
   );
 }
 
-function Avatar() {
-  // Place your photo at /public/avatar.jpg to replace the gradient initials.
+function HeroSlider({
+  activeSlideIndex,
+  setActiveSlideIndex,
+}: {
+  activeSlideIndex: number;
+  setActiveSlideIndex: (index: number) => void;
+}) {
   return (
-    <div className="relative h-full w-full bg-gradient-to-br from-primary via-accent to-primary-glow flex items-center justify-center">
-      <span className="font-display text-8xl font-bold text-white drop-shadow-2xl select-none">
-        EC
-      </span>
-      <div className="absolute inset-0 bg-grid opacity-20" aria-hidden />
+    <div className="glass relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-primary/20 shadow-2xl sm:aspect-[5/6] lg:min-h-[520px]">
+      <AnimatePresence initial={false} mode="popLayout">
+        <motion.div
+          key={heroSlides[activeSlideIndex].src}
+          initial={{ opacity: 0, x: 90, scale: 1.04 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: -90, scale: 0.98 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute inset-0"
+        >
+          <Image
+            src={heroSlides[activeSlideIndex].src}
+            alt={heroSlides[activeSlideIndex].alt}
+            fill
+            priority={activeSlideIndex === 0}
+            sizes="(min-width: 1024px) 32rem, (min-width: 640px) 70vw, 100vw"
+            className="object-cover"
+          />
+        </motion.div>
+      </AnimatePresence>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" aria-hidden />
+
+      <div className="absolute bottom-5 left-1/2 flex -translate-x-1/2 items-center gap-2">
+        {heroSlides.map((slide, index) => (
+          <button
+            key={slide.src}
+            type="button"
+            onClick={() => setActiveSlideIndex(index)}
+            aria-label={`Afficher l'image ${index + 1}`}
+            className={`h-2.5 rounded-full transition-all duration-300 ${
+              activeSlideIndex === index ? "w-8 bg-white" : "w-2.5 bg-white/50 hover:bg-white/80"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

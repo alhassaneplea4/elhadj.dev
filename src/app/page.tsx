@@ -17,10 +17,10 @@ export default function Home() {
       <main className="overflow-x-hidden">
         <Hero />
         <About />
+        <Experience />
         <Skills />
         <Services />
         <Projects />
-        <Experience />
         <Contact />
       </main>
       <Footer />

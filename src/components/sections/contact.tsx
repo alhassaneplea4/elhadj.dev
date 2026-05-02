@@ -1,42 +1,37 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send, Loader2, Check, AlertCircle } from "lucide-react";
+import { AlertCircle, Check, Loader2, Lock, Mail, MapPin, Phone, Send } from "lucide-react";
 import { useState } from "react";
-import { z } from "zod";
+import { FaFacebook, FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
+import type { IconType } from "react-icons";
+import { contactSchema } from "@/lib/contact-schema";
 import { personal, socials } from "@/lib/data";
 import { SectionHeader } from "@/components/ui/section-header";
-import { FaGithub, FaLinkedin, FaXTwitter, FaFacebook, FaDiscord } from "react-icons/fa6";
-import type { IconType } from "react-icons";
 
 const SOCIAL_ICONS: Record<string, IconType> = {
   github: FaGithub,
   linkedin: FaLinkedin,
   x: FaXTwitter,
   facebook: FaFacebook,
-  discord: FaDiscord,
   mail: Mail as unknown as IconType,
 };
-
-const schema = z.object({
-  name: z.string().min(2, "Nom trop court").max(80),
-  email: z.string().email("Email invalide").max(120),
-  message: z.string().min(10, "Message trop court (min 10 caractères)").max(2000),
-  honeypot: z.string().max(0),
-});
 
 type Status = "idle" | "loading" | "success" | "error";
 
 export function Contact() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Partial<Record<string, string>>>({});
+  const [notice, setNotice] = useState("");
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("loading");
     setErrors({});
+    setNotice("");
 
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
     const data = {
       name: String(fd.get("name") ?? ""),
       email: String(fd.get("email") ?? ""),
@@ -44,7 +39,8 @@ export function Contact() {
       honeypot: String(fd.get("website") ?? ""),
     };
 
-    const parsed = schema.safeParse(data);
+    const parsed = contactSchema.safeParse(data);
+
     if (!parsed.success) {
       const fieldErrors: Record<string, string> = {};
       parsed.error.issues.forEach((issue) => {
@@ -56,15 +52,33 @@ export function Contact() {
       return;
     }
 
-    // Local mode: simulate sending. To enable Resend, wire up /api/contact.
-    await new Promise((r) => setTimeout(r, 1200));
-    setStatus("success");
-    (e.target as HTMLFormElement).reset();
-    setTimeout(() => setStatus("idle"), 4000);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      const result = (await response.json().catch(() => null)) as { message?: string } | null;
+
+      if (!response.ok) {
+        throw new Error(result?.message || "Erreur, réessayez.");
+      }
+
+      setStatus("success");
+      setNotice("Message envoyé. Je vous répondrai rapidement.");
+      form.reset();
+      setTimeout(() => {
+        setStatus("idle");
+        setNotice("");
+      }, 5000);
+    } catch (error) {
+      setStatus("error");
+      setNotice(error instanceof Error ? error.message : "Impossible d'envoyer le message pour le moment.");
+    }
   };
 
   return (
-    <section id="contact" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="contact" className="relative overflow-hidden py-24 sm:py-32">
       <div className="absolute inset-0 bg-gradient-mesh opacity-50" aria-hidden />
 
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -74,7 +88,7 @@ export function Contact() {
           description="Une idée, un projet, une opportunité ? Je suis disponible pour échanger."
         />
 
-        <div className="grid lg:grid-cols-[1fr_1.2fr] gap-8">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr]">
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -82,14 +96,14 @@ export function Contact() {
             transition={{ duration: 0.6 }}
             className="space-y-6"
           >
-            <div className="glass rounded-3xl p-6 space-y-4">
+            <div className="glass space-y-4 rounded-3xl p-6">
               <ContactRow icon={<Mail size={20} className="text-primary" />} label="Email" value={personal.email} href={`mailto:${personal.email}`} />
               <ContactRow icon={<Phone size={20} className="text-accent" />} label="Téléphone" value={personal.phone} href={`tel:${personal.phone.replace(/\s/g, "")}`} />
               <ContactRow icon={<MapPin size={20} className="text-primary-glow" />} label="Localisation" value={personal.location} />
             </div>
 
             <div className="glass rounded-3xl p-6">
-              <h3 className="font-display font-bold mb-4">Suivez-moi</h3>
+              <h3 className="mb-4 font-display font-bold">Suivez-moi</h3>
               <div className="flex flex-wrap gap-3">
                 {socials.map((social) => {
                   const Icon = SOCIAL_ICONS[social.icon];
@@ -98,9 +112,9 @@ export function Contact() {
                       key={social.name}
                       href={social.url}
                       target={social.url.startsWith("http") ? "_blank" : undefined}
-                      rel="noopener noreferrer"
+                      rel={social.url.startsWith("http") ? "noopener noreferrer" : undefined}
                       whileHover={{ y: -4, scale: 1.1 }}
-                      className="h-12 w-12 rounded-2xl bg-surface-2/60 flex items-center justify-center text-muted hover:text-primary hover:bg-primary/10 hover:border-primary/40 border border-border/60 transition-all"
+                      className="flex h-12 w-12 items-center justify-center rounded-2xl border border-border/60 bg-surface-2/60 text-muted transition-all hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
                       aria-label={social.name}
                     >
                       {Icon && <Icon size={20} />}
@@ -117,10 +131,9 @@ export function Contact() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
             onSubmit={onSubmit}
-            className="glass rounded-3xl p-6 sm:p-8 space-y-5"
+            className="glass space-y-5 rounded-3xl p-6 sm:p-8"
             noValidate
           >
-            {/* Honeypot — bots fill this; humans don't see it */}
             <input
               type="text"
               name="website"
@@ -134,7 +147,7 @@ export function Contact() {
             <Field id="email" label="Email" type="email" placeholder="vous@exemple.com" error={errors.email} required />
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium mb-2">
+              <label htmlFor="message" className="mb-2 block text-sm font-medium">
                 Message <span className="text-accent">*</span>
               </label>
               <textarea
@@ -142,8 +155,8 @@ export function Contact() {
                 name="message"
                 rows={5}
                 required
-                placeholder="Parlez-moi de votre projet…"
-                className="w-full rounded-2xl border border-border/60 bg-surface-2/40 px-4 py-3 text-sm placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                placeholder="Parlez-moi de votre projet..."
+                className="w-full resize-none rounded-2xl border border-border/60 bg-surface-2/40 px-4 py-3 text-sm transition-all placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
               {errors.message && <p className="mt-1 text-xs text-accent">{errors.message}</p>}
             </div>
@@ -151,22 +164,28 @@ export function Contact() {
             <button
               type="submit"
               disabled={status === "loading"}
-              className="group relative w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-primary via-primary-glow to-accent px-6 py-3.5 font-medium text-white shadow-lg shadow-primary/30 hover:shadow-2xl hover:shadow-primary/50 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              className="group relative inline-flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-br from-primary via-primary-glow to-accent px-6 py-3.5 font-medium text-white shadow-lg shadow-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {status === "loading" && <Loader2 size={18} className="animate-spin" />}
               {status === "success" && <Check size={18} />}
               {status === "error" && <AlertCircle size={18} />}
-              {status === "idle" && <Send size={18} className="group-hover:translate-x-1 transition-transform" />}
+              {status === "idle" && <Send size={18} className="transition-transform group-hover:translate-x-1" />}
               <span>
-                {status === "loading" && "Envoi en cours…"}
+                {status === "loading" && "Envoi en cours..."}
                 {status === "success" && "Message envoyé !"}
                 {status === "error" && "Erreur, réessayez"}
                 {status === "idle" && "Envoyer le message"}
               </span>
             </button>
 
-            <p className="text-xs text-muted text-center">
-              🔒 Vos informations sont protégées et ne seront jamais partagées.
+            {notice && (
+              <p className={`text-center text-sm ${status === "error" ? "text-accent" : "text-success"}`} role="status">
+                {notice}
+              </p>
+            )}
+
+            <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted">
+              <Lock size={13} /> Vos informations sont protégées et ne seront jamais partagées.
             </p>
           </motion.form>
         </div>
@@ -180,14 +199,14 @@ function ContactRow({ icon, label, value, href }: { icon: React.ReactNode; label
   return (
     <Wrapper
       {...(href ? { href } : {})}
-      className="flex items-center gap-4 group hover:bg-surface-2/40 rounded-xl p-2 -m-2 transition-colors"
+      className="group -m-2 flex items-center gap-4 rounded-xl p-2 transition-colors hover:bg-surface-2/40"
     >
-      <div className="h-12 w-12 rounded-xl bg-surface-2/60 flex items-center justify-center group-hover:scale-110 transition-transform">
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-2/60 transition-transform group-hover:scale-110">
         {icon}
       </div>
       <div className="min-w-0">
         <div className="text-xs text-muted">{label}</div>
-        <div className="font-medium truncate">{value}</div>
+        <div className="truncate font-medium">{value}</div>
       </div>
     </Wrapper>
   );
@@ -210,7 +229,7 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium mb-2">
+      <label htmlFor={id} className="mb-2 block text-sm font-medium">
         {label} {required && <span className="text-accent">*</span>}
       </label>
       <input
@@ -220,7 +239,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         autoComplete={type === "email" ? "email" : "name"}
-        className="w-full rounded-2xl border border-border/60 bg-surface-2/40 px-4 py-3 text-sm placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+        className="w-full rounded-2xl border border-border/60 bg-surface-2/40 px-4 py-3 text-sm transition-all placeholder:text-muted/60 focus:border-primary focus:bg-surface focus:outline-none focus:ring-2 focus:ring-primary/20"
       />
       {error && <p className="mt-1 text-xs text-accent">{error}</p>}
     </div>

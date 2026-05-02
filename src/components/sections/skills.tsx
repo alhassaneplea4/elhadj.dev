@@ -7,25 +7,24 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { TechIcon } from "@/components/ui/tech-icon";
 import { cn } from "@/lib/utils";
 
-const CATEGORIES: (SkillCategory | "Tous")[] = ["Tous", "Frontend", "Backend", "Mobile", "Design", "Outils"];
+const CATEGORIES: (SkillCategory | "Tous")[] = ["Tous", "Frontend", "Backend", "Mobile", "Design", "Outils", "IA"];
 
 export function Skills() {
   const [filter, setFilter] = useState<(typeof CATEGORIES)[number]>("Tous");
-
   const filtered = filter === "Tous" ? skills : skills.filter((s) => s.category === filter);
 
   return (
-    <section id="skills" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="skills" className="relative overflow-hidden py-24 sm:py-32">
       <div className="absolute inset-0 bg-gradient-mesh opacity-50" aria-hidden />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Compétences"
-          title="Mes Technologies"
+          title="Mes technologies"
           description="Stack technique maîtrisée pour livrer des solutions modernes et performantes."
         />
 
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
+        <div className="mb-12 flex flex-wrap justify-center gap-2">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
@@ -33,9 +32,7 @@ export function Skills() {
               onClick={() => setFilter(cat)}
               className={cn(
                 "relative rounded-full px-5 py-2 text-sm font-medium transition-all",
-                filter === cat
-                  ? "text-white"
-                  : "text-muted hover:text-foreground border border-border/60 bg-surface/40"
+                filter === cat ? "text-white" : "border border-border/60 bg-surface/40 text-muted hover:text-foreground"
               )}
             >
               {filter === cat && (
@@ -50,14 +47,11 @@ export function Skills() {
           ))}
         </div>
 
-        <motion.div
-          layout
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4"
-        >
+        <motion.div layout className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {filtered.map((skill, i) => (
             <motion.div
               layout
-              key={skill.name}
+              key={`${skill.category}-${skill.name}-${skill.icon}`}
               initial={{ opacity: 0, scale: 0.7, y: 20 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
@@ -70,11 +64,11 @@ export function Skills() {
                 style={{ background: skill.color }}
                 aria-hidden
               />
-              <div className="relative glass rounded-2xl p-5 flex flex-col items-center justify-center gap-3 aspect-square hover:border-primary/40 transition-all">
+              <div className="glass relative flex aspect-square flex-col items-center justify-center gap-3 rounded-2xl p-5 transition-all hover:border-primary/40">
                 <TechIcon icon={skill.icon} color={skill.color} size={42} />
                 <div className="text-center">
                   <div className="text-sm font-semibold">{skill.name}</div>
-                  <div className="mt-2 w-full h-1 rounded-full bg-surface-2 overflow-hidden">
+                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-surface-2">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${skill.level}%` }}
