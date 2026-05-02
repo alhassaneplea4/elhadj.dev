@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown, Download, Mail, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { personal } from "@/lib/data";
 import { MagneticButton } from "@/components/ui/magnetic-button";
 import { Typewriter } from "@/components/ui/typewriter";
@@ -21,34 +21,27 @@ const heroSlides = [
 ];
 
 const availabilityColors = [
-  "text-success",
-  "text-primary",
-  "text-accent",
-  "text-primary-glow",
-  "text-blue-300",
-  "text-emerald-300",
-  "text-rose-300",
-  "text-yellow-200",
-  "text-purple-300",
+  "text-success", "text-primary", "text-accent", "text-primary-glow",
+  "text-blue-300", "text-emerald-300", "text-rose-300", "text-yellow-200", "text-purple-300",
 ];
 
 export function Hero() {
   const [availabilityColorIndex, setAvailabilityColorIndex] = useState(0);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    mounted.current = true;
     const interval = window.setInterval(() => {
-      setAvailabilityColorIndex((index) => (index + 1) % availabilityColors.length);
+      setAvailabilityColorIndex((i) => (i + 1) % availabilityColors.length);
     }, 2000);
-
     return () => window.clearInterval(interval);
   }, []);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
-      setActiveSlideIndex((index) => (index + 1) % heroSlides.length);
+      setActiveSlideIndex((i) => (i + 1) % heroSlides.length);
     }, 4000);
-
     return () => window.clearInterval(interval);
   }, []);
 
@@ -57,9 +50,22 @@ export function Hero() {
       <div className="absolute inset-0 bg-gradient-mesh" aria-hidden />
       <div className="absolute inset-0 bg-grid opacity-40" aria-hidden />
 
-      <div className="absolute -left-32 -top-32 h-[360px] w-[360px] rounded-full bg-primary/25 blur-3xl animate-blob sm:h-[420px] sm:w-[420px]" aria-hidden />
-      <div className="absolute -right-40 top-1/3 h-[380px] w-[380px] rounded-full bg-accent/20 blur-3xl animate-blob [animation-delay:-7s] sm:h-[480px] sm:w-[480px]" aria-hidden />
-      <div className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-primary-glow/20 blur-3xl animate-blob [animation-delay:-14s] sm:h-[360px] sm:w-[360px]" aria-hidden />
+      {/* Blobs — will-change:transform isole les repaints, réduit l'impact sur le LCP */}
+      <div
+        className="absolute -left-32 -top-32 h-[360px] w-[360px] rounded-full bg-primary/25 blur-3xl animate-blob sm:h-[420px] sm:w-[420px]"
+        style={{ willChange: "transform" }}
+        aria-hidden
+      />
+      <div
+        className="absolute -right-40 top-1/3 h-[380px] w-[380px] rounded-full bg-accent/20 blur-3xl animate-blob [animation-delay:-7s] sm:h-[480px] sm:w-[480px]"
+        style={{ willChange: "transform" }}
+        aria-hidden
+      />
+      <div
+        className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-primary-glow/20 blur-3xl animate-blob [animation-delay:-14s] sm:h-[360px] sm:w-[360px]"
+        style={{ willChange: "transform" }}
+        aria-hidden
+      />
 
       <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
@@ -149,7 +155,11 @@ export function Hero() {
             className="order-1 lg:order-2"
           >
             <div className="relative mx-auto w-full max-w-xl">
-              <div className="absolute -inset-6 rounded-[2rem] bg-gradient-to-tr from-primary via-primary-glow to-accent opacity-30 blur-2xl animate-pulse-glow" aria-hidden />
+              <div
+                className="absolute -inset-6 rounded-[2rem] bg-gradient-to-tr from-primary via-primary-glow to-accent opacity-30 blur-2xl animate-pulse-glow"
+                style={{ willChange: "opacity" }}
+                aria-hidden
+              />
               <HeroSlider activeSlideIndex={activeSlideIndex} setActiveSlideIndex={setActiveSlideIndex} />
             </div>
           </motion.div>
@@ -163,7 +173,6 @@ export function Hero() {
           className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 text-xs text-muted transition-colors hover:text-primary md:flex"
           aria-label="Aller à la section à propos"
         >
-          {/* <span className="uppercase tracking-widest">Scroll</span> */}
           <ArrowDown size={16} />
         </motion.a>
       </div>
@@ -183,11 +192,12 @@ function HeroSlider({
       <AnimatePresence initial={false} mode="popLayout">
         <motion.div
           key={heroSlides[activeSlideIndex].src}
-          initial={{ opacity: 0, x: 90, scale: 1.04 }}
+          initial={{ opacity: 0, x: 60, scale: 1.03 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
-          exit={{ opacity: 0, x: -90, scale: 0.98 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          exit={{ opacity: 0, x: -60, scale: 0.98 }}
+          transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
           className="absolute inset-0"
+          style={{ willChange: "transform, opacity" }}
         >
           <Image
             src={heroSlides[activeSlideIndex].src}

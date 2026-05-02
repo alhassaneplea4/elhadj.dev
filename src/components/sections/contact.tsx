@@ -65,12 +65,12 @@ export function Contact() {
       }
 
       setStatus("success");
-      setNotice("Message envoyé. Je vous répondrai rapidement.");
+      setNotice("✅ Message envoyé ! Je vous répondrai rapidement.");
       form.reset();
       setTimeout(() => {
         setStatus("idle");
         setNotice("");
-      }, 5000);
+      }, 8000);
     } catch (error) {
       setStatus("error");
       setNotice(error instanceof Error ? error.message : "Impossible d'envoyer le message pour le moment.");
@@ -179,9 +179,18 @@ export function Contact() {
             </button>
 
             {notice && (
-              <p className={`text-center text-sm ${status === "error" ? "text-accent" : "text-success"}`} role="status">
+              <motion.p
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`rounded-xl px-4 py-3 text-center text-sm font-medium ${
+                  status === "error"
+                    ? "bg-accent/10 text-accent border border-accent/30"
+                    : "bg-success/10 text-success border border-success/30"
+                }`}
+                role="status"
+              >
                 {notice}
-              </p>
+              </motion.p>
             )}
 
             <p className="flex items-center justify-center gap-1.5 text-center text-xs text-muted">

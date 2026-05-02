@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import { contactSchema } from "@/lib/contact-schema";
 import { personal } from "@/lib/data";
+import { notificationEmail, autoReplyEmail } from "@/lib/email-templates";
 
 export const runtime = "nodejs";
 
@@ -37,7 +38,6 @@ export async function POST(request: Request) {
   }
 
   let body: unknown;
-
   try {
     body = await request.json();
   } catch {
@@ -45,48 +45,56 @@ export async function POST(request: Request) {
   }
 
   const parsed = contactSchema.safeParse(body);
-
   if (!parsed.success) {
     return Response.json(
       {
         message: "Certains champs sont invalides.",
-        issues: parsed.error.flatten().fieldErrors,
+        issues: Object.fromEntries(
+          parsed.error.issues
+            .filter((i) => i.path.length > 0)
+            .map((i) => [String(i.path[0]), [i.message]])
+        ),
       },
       { status: 422 }
     );
   }
 
   if (!resend) {
-    return Response.json(
-      { message: "Le service d'envoi n'est pas encore configuré." },
-      { status: 503 }
-    );
+    return Response.json({ message: "Le service d'envoi n'est pas encore configuré." }, { status: 503 });
   }
 
   const { name, email, message } = parsed.data;
-  const to = process.env.CONTACT_TO_EMAIL || personal.email;
+  const ownerEmail = process.env.CONTACT_TO_EMAIL || personal.email;
   const from = process.env.CONTACT_FROM_EMAIL || "Portfolio <onboarding@resend.dev>";
 
+  // Email principal : notification à Elhadj (critique — échec bloquant)
   try {
     await resend.emails.send({
       from,
-      to,
+      to: ownerEmail,
       replyTo: email,
-      subject: `Nouveau message portfolio - ${name}`,
-      text: [
-        `Nom: ${name}`,
-        `Email: ${email}`,
-        "",
-        "Message:",
-        message,
-      ].join("\n"),
+      subject: `📬 Nouveau message de ${name} — Portfolio`,
+      html: notificationEmail(name, email, message),
+      text: `Nom: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
     });
-
-    return Response.json({ message: "Message envoyé." });
-  } catch {
-    return Response.json(
-      { message: "Impossible d'envoyer le message pour le moment." },
-      { status: 502 }
-    );
+  } catch (err) {
+    console.error("[contact] Échec envoi notification:", err);
+    return Response.json({ message: "Impossible d'envoyer le message pour le moment." }, { status: 502 });
   }
+
+  // Email de réponse automatique à l'expéditeur (non-bloquant)
+  // Avec onboarding@resend.dev (sandbox), l'envoi vers des emails non vérifiés
+  // est silencieusement ignoré — il faut un domaine vérifié pour le livrer.
+  resend.emails
+    .send({
+      from,
+      to: email,
+      replyTo: ownerEmail,
+      subject: "Message bien reçu — Elhadj Alhassana CAMARA",
+      html: autoReplyEmail(name),
+      text: `Bonjour ${name},\n\nMerci pour votre message ! Je l'ai bien reçu et j'y apporterai une réponse dans les 24 à 48 heures.\n\nCordialement,\nElhadj Alhassana CAMARA\nDéveloppeur Web & Mobile\nastreonetgn@gmail.com`,
+    })
+    .catch((err) => console.error("[contact] Échec auto-reply (non-bloquant):", err));
+
+  return Response.json({ message: "Message envoyé." });
 }

@@ -6,7 +6,12 @@
       "mcp__Claude_in_Chrome__tabs_context_mcp",
       "Bash(node -e \"const icons = require\\('lucide-react'\\); const names = Object.keys\\(icons\\).filter\\(k => /github|linkedin|twitter|facebook|x$/i.test\\(k\\)\\); console.log\\(names\\);\")",
       "Bash(node -e \"const icons = require\\('react-icons/si'\\); const names = Object.keys\\(icons\\).filter\\(k => /github|linked|twitter|facebook|x$/i.test\\(k\\)\\); console.log\\(names.slice\\(0,20\\)\\);\")",
-      "Bash(node -e \"const si = require\\('react-icons/si'\\); const fa6 = require\\('react-icons/fa6'\\); const siNames = Object.keys\\(si\\).filter\\(k => /github|linked|facebook/i.test\\(k\\)\\); const fa6Names = Object.keys\\(fa6\\).filter\\(k => /github|linked|twitter|facebook|xtwitter/i.test\\(k\\)\\); console.log\\('si:', siNames.slice\\(0,10\\)\\); console.log\\('fa6:', fa6Names.slice\\(0,10\\)\\);\")"
+      "Bash(node -e \"const si = require\\('react-icons/si'\\); const fa6 = require\\('react-icons/fa6'\\); const siNames = Object.keys\\(si\\).filter\\(k => /github|linked|facebook/i.test\\(k\\)\\); const fa6Names = Object.keys\\(fa6\\).filter\\(k => /github|linked|twitter|facebook|xtwitter/i.test\\(k\\)\\); console.log\\('si:', siNames.slice\\(0,10\\)\\); console.log\\('fa6:', fa6Names.slice\\(0,10\\)\\);\")",
+      "Bash(xargs grep *)",
+      "Bash(curl -s -X POST http://localhost:3000/api/contact -H \"Content-Type: application/json\" -d \"{\\\\\"name\\\\\":\\\\\"Test\\\\\",\\\\\"email\\\\\":\\\\\"test@test.com\\\\\",\\\\\"message\\\\\":\\\\\"Message de test depuis audit\\\\\",\\\\\"honeypot\\\\\":\\\\\"\\\\\"}\")",
+      "Bash(node -e \"const z = require\\('zod'\\); console.log\\(z.version ?? require\\('./node_modules/zod/package.json'\\).version\\)\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/contact -H \"Content-Type: application/json\" -d \"{\\\\\"name\\\\\":\\\\\"Elhadj Saidou\\\\\",\\\\\"email\\\\\":\\\\\"arshavineastro04@gmail.com\\\\\",\\\\\"message\\\\\":\\\\\"Bonjour comment tu vas ?\\\\\",\\\\\"honeypot\\\\\":\\\\\"\\\\\"}\")",
+      "Bash(curl -s -X POST http://localhost:3000/api/contact -H \"Content-Type: application/json\" -d \"{\\\\\"name\\\\\":\\\\\"Elhadj Saidou\\\\\",\\\\\"email\\\\\":\\\\\"arshavineastro04@gmail.com\\\\\",\\\\\"message\\\\\":\\\\\"Bonjour comment tu vas ?\\\\\",\\\\\"honeypot\\\\\":\\\\\"\\\\\"}\" -w \"\\\\nHTTP_STATUS:%{http_code}\")"
     ]
   }
 }

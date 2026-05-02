@@ -77,6 +77,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
       className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full`}
     >
+      <head>
+        {/* Précharge la première slide hero pour réduire le LCP */}
+        <link rel="preload" as="image" href="/hero-slides/slide-1.jpg" fetchPriority="high" />
+      </head>
       <body className="min-h-full antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
           {children}
